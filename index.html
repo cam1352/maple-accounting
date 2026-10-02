@@ -1,306 +1,284 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <title>Professional Payroll & Pay Stub Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .tab-btn.active { 
-      border-bottom: 2px solid var(--primary);
-      color: var(--primary);
-      font-weight: 600;
-    }
-    input, select {
-      background-color: var(--background);
-      color: var(--foreground);
-      border: 1px solid var(--border);
+    /* Professional Corporate Styling */
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f3f4f6; color: #111827; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    
+    /* App UI */
+    .app-card { background: white; border: 1px solid #e5e7eb; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .app-header { background: #1e293b; color: white; padding: 15px 20px; border-radius: 4px 4px 0 0; }
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; color: #374151; }
+    .form-control { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 3px; font-size: 0.875rem; }
+    .btn { padding: 0.5rem 1rem; font-weight: 600; border-radius: 3px; cursor: pointer; text-align: center; font-size: 0.875rem; border: none;}
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+    .btn-secondary:hover { background: #e5e7eb; }
+
+    /* Printable Pay Stub Styles (Matches the uploaded image) */
+    #print-section { display: none; background: white; padding: 40px; }
+    .stub-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: 'Arial', sans-serif; font-size: 13px; }
+    .stub-table th { border-bottom: 1px solid #000; text-align: right; padding: 5px; font-weight: bold; }
+    .stub-table th.left { text-align: left; }
+    .stub-table td { padding: 4px 5px; text-align: right; }
+    .stub-table td.left { text-align: left; }
+    .stub-total-row td { border-top: 1px solid #000; font-weight: bold; padding-top: 8px;}
+    .stub-header-line { border-bottom: 1px solid #000; font-weight: bold; margin-top: 20px;}
+    .net-pay { font-weight: bold; font-size: 14px; margin-top: 20px;}
+    
+    @media print {
+      body * { visibility: hidden; background: white; margin: 0; padding: 0; }
+      #print-section, #print-section * { visibility: visible; }
+      #print-section { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
     }
   </style>
 </head>
-<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-4 md:p-8">
+<body>
 
-  <div class="max-w-4xl mx-auto bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-sm overflow-hidden">
-    <!-- Header -->
-    <div class="bg-[var(--primary)] text-[var(--primary-foreground)] p-6">
-      <h1 class="text-2xl font-bold">🍁 Maple Accounting & Payroll</h1>
-      <p class="text-sm opacity-90">Local Cafe & Restaurant Edition (Browser App)</p>
+<div class="container" id="app-ui">
+  <div class="app-card">
+    <div class="app-header">
+      <h1 class="text-xl font-semibold">Corporate Payroll System</h1>
+      <p class="text-xs text-gray-300">Generate Professional Pay Stubs</p>
     </div>
 
-    <!-- Tabs Navigation -->
-    <div class="flex border-b border-[var(--border)] px-4">
-      <button class="tab-btn active px-4 py-3 text-sm" onclick="showTab('tab-payroll', this)">💸 Payroll</button>
-      <button class="tab-btn px-4 py-3 text-sm" onclick="showTab('tab-ledger', this)">📊 Daily Log</button>
-      <button class="tab-btn px-4 py-3 text-sm" onclick="showTab('tab-receipts', this)">📸 Receipts</button>
-      <button class="tab-btn px-4 py-3 text-sm" onclick="showTab('tab-reports', this)">📈 Reports</button>
-    </div>
-
-    <div class="p-6">
-      <!-- PAYROLL TAB -->
-      <div id="tab-payroll" class="tab-content active">
-        <h2 class="text-lg font-semibold mb-4">Run Payroll</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-sm text-[var(--muted-foreground)] mb-1">Employee Name</label>
-            <input type="text" id="emp-name" class="w-full rounded p-2" placeholder="Jane Doe">
+    <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      <!-- Input Section -->
+      <div>
+        <h2 class="text-lg font-bold border-b pb-2 mb-4">Employee Information</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="form-group">
+            <label class="form-label">Employee Name</label>
+            <input type="text" id="empName" class="form-control" value="Jericho">
           </div>
-          <div>
-            <label class="block text-sm text-[var(--muted-foreground)] mb-1">Gross Pay ($)</label>
-            <input type="number" id="gross-pay" class="w-full rounded p-2" placeholder="0.00" step="0.01">
+          <div class="form-group">
+            <label class="form-label">Pay Period</label>
+            <input type="text" id="payPeriod" class="form-control" value="Oct 01 - Oct 15, 2024">
           </div>
         </div>
-        <button onclick="calculatePayroll()" class="bg-[var(--primary)] text-[var(--primary-foreground)] px-4 py-2 rounded font-medium hover:opacity-90">Calculate & Save</button>
 
-        <div id="payroll-result" class="mt-4 p-4 rounded bg-green-100 text-green-800 hidden font-medium"></div>
+        <h2 class="text-lg font-bold border-b pb-2 mb-4 mt-6">Earnings</h2>
+        <div id="earnings-container">
+          <!-- Dynamic Earnings Rows -->
+        </div>
+        <button onclick="addEarningRow()" class="btn btn-secondary text-xs mt-2">+ Add Earning Line</button>
 
-        <h3 class="text-md font-semibold mt-8 mb-2">Payroll History</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm text-left border-collapse">
-            <thead class="border-b border-[var(--border)] bg-[var(--muted)]">
-              <tr>
-                <th class="p-2">Date</th><th class="p-2">Name</th><th class="p-2">Gross</th><th class="p-2">CPP</th><th class="p-2">EI</th><th class="p-2">Tax</th><th class="p-2">Net</th>
-              </tr>
-            </thead>
-            <tbody id="payroll-table-body">
-              <!-- JS will populate -->
-            </tbody>
-          </table>
+        <h2 class="text-lg font-bold border-b pb-2 mb-4 mt-8">Withholdings (Taxes & Deductions)</h2>
+        <div id="withholdings-container">
+          <!-- Dynamic Withholding Rows -->
+        </div>
+        <button onclick="addWithholdingRow()" class="btn btn-secondary text-xs mt-2">+ Add Withholding Line</button>
+
+        <div class="mt-8 border-t pt-4">
+          <button onclick="generateStub()" class="btn btn-primary w-full py-3">Generate Professional Pay Stub</button>
         </div>
       </div>
 
-      <!-- LEDGER TAB -->
-      <div id="tab-ledger" class="tab-content">
-        <h2 class="text-lg font-semibold mb-4">Log Daily Transaction</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-sm text-[var(--muted-foreground)] mb-1">Type</label>
-            <select id="l-type" class="w-full rounded p-2">
-              <option value="Income">Income (Daily Sales / Z-Tape)</option>
-              <option value="Expense">Expense (Supplier Payment)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm text-[var(--muted-foreground)] mb-1">Amount ($)</label>
-            <input type="number" id="l-amount" class="w-full rounded p-2" placeholder="0.00" step="0.01">
-          </div>
-          <div>
-            <label class="block text-sm text-[var(--muted-foreground)] mb-1">Category</label>
-            <input type="text" id="l-category" class="w-full rounded p-2" placeholder="e.g. Sales, Coffee Supplier">
-          </div>
-          <div>
-            <label class="block text-sm text-[var(--muted-foreground)] mb-1">Description</label>
-            <input type="text" id="l-desc" class="w-full rounded p-2" placeholder="e.g. Tuesday Z-Tape">
-          </div>
-        </div>
-        
-        <div class="mb-4 border border-[var(--border)] rounded p-4 bg-[var(--muted)]/20">
-          <label class="block text-sm font-semibold mb-2">📸 Attach Receipt or Z-Tape (Optional)</label>
-          <!-- Using accept="image/*" capture="environment" to prefer camera on mobile -->
-          <input type="file" id="l-receipt" accept="image/*" capture="environment" class="text-sm">
-        </div>
-        
-        <button onclick="saveLedger()" class="bg-[var(--primary)] text-[var(--primary-foreground)] px-4 py-2 rounded font-medium hover:opacity-90">Save Transaction</button>
-        <div id="ledger-result" class="mt-4 text-sm font-medium hidden"></div>
-      </div>
-
-      <!-- RECEIPTS TAB -->
-      <div id="tab-receipts" class="tab-content">
-        <h2 class="text-lg font-semibold mb-4">📸 Receipt Vault</h2>
-        <p class="text-sm text-[var(--muted-foreground)] mb-4">Images attached to your daily logs are shown below.</p>
-        <div id="receipts-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- JS will populate -->
-        </div>
-      </div>
-
-      <!-- REPORTS TAB -->
-      <div id="tab-reports" class="tab-content">
-        <h2 class="text-lg font-semibold mb-4">📈 Financial Summary</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div class="p-4 border border-[var(--border)] rounded bg-green-500/10 text-green-700">
-            <h3 class="text-sm">Total Income</h3>
-            <p id="rep-income" class="text-2xl font-bold">$0.00</p>
-          </div>
-          <div class="p-4 border border-[var(--border)] rounded bg-red-500/10 text-red-700">
-            <h3 class="text-sm">Total Expenses</h3>
-            <p id="rep-expense" class="text-2xl font-bold">$0.00</p>
-          </div>
-          <div class="p-4 border border-[var(--border)] rounded bg-blue-500/10 text-blue-700">
-            <h3 class="text-sm">Net Profit</h3>
-            <p id="rep-profit" class="text-2xl font-bold">$0.00</p>
-          </div>
-        </div>
-
-        <h3 class="text-md font-semibold mb-2">Total CRA Remittances (Payroll)</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm text-left border-collapse">
-            <thead class="border-b border-[var(--border)] bg-[var(--muted)]">
-              <tr>
-                <th class="p-2">Gross Paid</th><th class="p-2">CPP Due</th><th class="p-2">EI Due</th><th class="p-2">Tax Due</th>
-              </tr>
-            </thead>
-            <tbody id="reports-payroll-body">
-              <tr><td colspan="4" class="p-2 text-center text-sm">No payroll data</td></tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <button onclick="clearData()" class="mt-8 text-sm text-red-500 underline">Clear All Local Data</button>
+      <!-- Preview Section -->
+      <div class="bg-gray-50 border rounded p-4 h-full">
+         <h2 class="text-sm font-bold text-gray-500 uppercase mb-4">Document Preview</h2>
+         <p class="text-xs text-gray-400 mb-4">Click Generate to preview the pay stub format. You can then save it as a PDF or Print it to send to the employee.</p>
+         
+         <div id="preview-box" class="bg-white border shadow-sm p-4 text-xs overflow-auto" style="min-height: 400px; display:none;">
+            <!-- Rendered stub goes here -->
+         </div>
+         
+         <button id="printBtn" onclick="window.print()" class="btn btn-primary w-full mt-4" style="display:none;">Print / Save as PDF</button>
       </div>
 
     </div>
   </div>
+</div>
 
-  <script>
-    // Simple state management using localStorage
-    let db = JSON.parse(localStorage.getItem('maple_db')) || { payroll: [], ledger: [] };
+<!-- Print Only Section (Matches User Image) -->
+<div id="print-section">
+  <!-- Filled by JS -->
+</div>
 
-    function saveDB() {
-      try {
-        localStorage.setItem('maple_db', JSON.stringify(db));
-      } catch (e) {
-        alert("Warning: Local storage is full. Too many large images.");
-      }
-      renderAll();
+<script>
+  // Initial Data structures
+  let earnings = [
+    { desc: "Regular Hourly Rate", qty: 31, rate: 20.00, ytd: 13400.00 },
+    { desc: "Working on statutory holiday", qty: 6, rate: 30.00, ytd: 465.00 },
+    { desc: "VacPay-Accrual Paid Out", qty: 0, rate: 0, current: 558.78, ytd: 558.78 }
+  ];
+
+  let withholdings = [
+    { desc: "CPP - Employee", current: -72.17, ytd: -796.64 },
+    { desc: "EI - Employee", current: -22.15, ytd: -244.40 },
+    { desc: "Federal Income Tax", current: -92.60, ytd: -1037.65 }
+  ];
+
+  function renderInputs() {
+    const eContainer = document.getElementById('earnings-container');
+    eContainer.innerHTML = earnings.map((e, i) => `
+      <div class="grid grid-cols-12 gap-2 mb-2 items-center">
+        <div class="col-span-4"><input type="text" class="form-control text-xs" value="${e.desc}" onchange="updateEarning(${i}, 'desc', this.value)" placeholder="Description"></div>
+        <div class="col-span-2"><input type="number" class="form-control text-xs" value="${e.qty||''}" onchange="updateEarning(${i}, 'qty', this.value)" placeholder="Qty"></div>
+        <div class="col-span-2"><input type="number" class="form-control text-xs" value="${e.rate||''}" onchange="updateEarning(${i}, 'rate', this.value)" placeholder="Rate"></div>
+        <div class="col-span-2"><input type="number" class="form-control text-xs" value="${e.current !== undefined ? e.current : (e.qty*e.rate).toFixed(2)}" onchange="updateEarning(${i}, 'current', this.value)" placeholder="Current"></div>
+        <div class="col-span-2"><input type="number" class="form-control text-xs" value="${e.ytd||''}" onchange="updateEarning(${i}, 'ytd', this.value)" placeholder="YTD"></div>
+      </div>
+    `).join('');
+
+    const wContainer = document.getElementById('withholdings-container');
+    wContainer.innerHTML = withholdings.map((w, i) => `
+      <div class="grid grid-cols-12 gap-2 mb-2 items-center">
+        <div class="col-span-6"><input type="text" class="form-control text-xs" value="${w.desc}" onchange="updateWithholding(${i}, 'desc', this.value)" placeholder="Tax/Deduction Name"></div>
+        <div class="col-span-3"><input type="number" class="form-control text-xs" value="${w.current}" onchange="updateWithholding(${i}, 'current', this.value)" placeholder="Current"></div>
+        <div class="col-span-3"><input type="number" class="form-control text-xs" value="${w.ytd}" onchange="updateWithholding(${i}, 'ytd', this.value)" placeholder="YTD"></div>
+      </div>
+    `).join('');
+  }
+
+  function updateEarning(index, field, value) {
+    earnings[index][field] = field === 'desc' ? value : parseFloat(value) || 0;
+    if(field === 'qty' || field === 'rate') {
+      earnings[index].current = undefined; // recalculate
     }
+    renderInputs();
+  }
 
-    function showTab(tabId, btn) {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      btn.classList.add('active');
-    }
+  function updateWithholding(index, field, value) {
+    withholdings[index][field] = field === 'desc' ? value : parseFloat(value) || 0;
+    renderInputs();
+  }
 
-    function calculatePayroll() {
-      const name = document.getElementById('emp-name').value;
-      const gross = parseFloat(document.getElementById('gross-pay').value);
-      if(!name || isNaN(gross) || gross <= 0) return;
+  function addEarningRow() {
+    earnings.push({ desc: "", qty: 0, rate: 0, ytd: 0 });
+    renderInputs();
+  }
 
-      const cpp_exemption = 3500 / 26; // Approx bi-weekly
-      const cpp_subj = Math.max(0, gross - cpp_exemption);
-      const cpp = cpp_subj * 0.0595;
-      const ei = gross * 0.0166;
-      const tax = gross * 0.15;
-      const net = gross - cpp - ei - tax;
+  function addWithholdingRow() {
+    withholdings.push({ desc: "", current: 0, ytd: 0 });
+    renderInputs();
+  }
 
-      const record = {
-        date: new Date().toLocaleDateString(),
-        name, gross, cpp, ei, tax, net
-      };
+  function formatMoney(num) {
+    return Number(num).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
 
-      db.payroll.unshift(record);
-      saveDB();
+  function formatNum(num) {
+    if(!num) return "";
+    return Number(num).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
 
-      const res = document.getElementById('payroll-result');
-      res.textContent = `Success! Calculated net pay for ${name} is $${net.toFixed(2)}`;
-      res.classList.remove('hidden');
+  function generateStub() {
+    let eHtml = '';
+    let totalQty = 0;
+    let totalCurEarn = 0;
+    let totalYTDEarn = 0;
+
+    earnings.forEach(e => {
+      let cur = e.current !== undefined ? e.current : (e.qty * e.rate);
+      totalQty += e.qty || 0;
+      totalCurEarn += cur;
+      totalYTDEarn += e.ytd || 0;
       
-      document.getElementById('emp-name').value = '';
-      document.getElementById('gross-pay').value = '';
-      setTimeout(() => res.classList.add('hidden'), 5000);
-    }
-
-    function saveLedger() {
-      const type = document.getElementById('l-type').value;
-      const amount = parseFloat(document.getElementById('l-amount').value);
-      const category = document.getElementById('l-category').value;
-      const desc = document.getElementById('l-desc').value;
-      const fileInput = document.getElementById('l-receipt');
-
-      if(isNaN(amount) || amount <= 0) return;
-
-      const record = {
-        date: new Date().toLocaleDateString(),
-        type, amount, category, desc, image: null
-      };
-
-      if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          record.image = e.target.result; // Base64 data URL
-          db.ledger.unshift(record);
-          saveDB();
-          showLedgerSuccess();
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-      } else {
-        db.ledger.unshift(record);
-        saveDB();
-        showLedgerSuccess();
-      }
-    }
-
-    function showLedgerSuccess() {
-      document.getElementById('l-amount').value = '';
-      document.getElementById('l-category').value = '';
-      document.getElementById('l-desc').value = '';
-      document.getElementById('l-receipt').value = '';
-      
-      const res = document.getElementById('ledger-result');
-      res.textContent = `Transaction saved securely.`;
-      res.className = "mt-4 text-sm font-medium p-2 bg-green-100 text-green-800 rounded";
-      setTimeout(() => { res.className = "mt-4 text-sm font-medium hidden"; }, 4000);
-    }
-
-    function renderAll() {
-      // Payroll Table
-      const pBody = document.getElementById('payroll-table-body');
-      pBody.innerHTML = db.payroll.map(r => `
-        <tr class="border-b border-[var(--border)]">
-          <td class="p-2">${r.date}</td><td class="p-2">${r.name}</td>
-          <td class="p-2">$${r.gross.toFixed(2)}</td><td class="p-2">$${r.cpp.toFixed(2)}</td>
-          <td class="p-2">$${r.ei.toFixed(2)}</td><td class="p-2">$${r.tax.toFixed(2)}</td>
-          <td class="p-2 font-semibold">$${r.net.toFixed(2)}</td>
+      eHtml += `
+        <tr>
+          <td class="left">${e.desc}</td>
+          <td>${e.qty ? formatNum(e.qty) : ''}</td>
+          <td>${e.rate ? formatMoney(e.rate) : ''}</td>
+          <td>${formatMoney(cur)}</td>
+          <td>${formatMoney(e.ytd || 0)}</td>
         </tr>
-      `).join('');
+      `;
+    });
 
-      // Receipts
-      const rContainer = document.getElementById('receipts-container');
-      const receipts = db.ledger.filter(l => l.image);
-      if (receipts.length === 0) {
-        rContainer.innerHTML = `<p class="text-sm text-[var(--muted-foreground)]">No receipts attached yet.</p>`;
-      } else {
-        rContainer.innerHTML = receipts.map(r => `
-          <div class="border border-[var(--border)] p-3 rounded bg-[var(--muted)]/10">
-            <p class="text-xs font-bold">${r.date} - ${r.type}</p>
-            <p class="text-sm mb-2">${r.category}: $${r.amount.toFixed(2)}</p>
-            <img src="${r.image}" class="w-full h-auto rounded border border-[var(--border)] max-h-48 object-cover">
-          </div>
-        `).join('');
-      }
+    let wHtml = '';
+    let totalCurWith = 0;
+    let totalYTDWith = 0;
 
-      // Reports
-      let income = 0, expense = 0;
-      db.ledger.forEach(l => {
-        if(l.type === 'Income') income += l.amount;
-        else expense += l.amount;
-      });
-      document.getElementById('rep-income').textContent = `$${income.toFixed(2)}`;
-      document.getElementById('rep-expense').textContent = `$${expense.toFixed(2)}`;
-      document.getElementById('rep-profit').textContent = `$${(income - expense).toFixed(2)}`;
+    withholdings.forEach(w => {
+      totalCurWith += w.current;
+      totalYTDWith += w.ytd;
+      wHtml += `
+        <tr>
+          <td class="left" colspan="3">${w.desc}</td>
+          <td>${formatMoney(w.current)}</td>
+          <td>${formatMoney(w.ytd)}</td>
+        </tr>
+      `;
+    });
 
-      let tg = 0, tc = 0, te = 0, tt = 0;
-      db.payroll.forEach(r => { tg+=r.gross; tc+=r.cpp; te+=r.ei; tt+=r.tax; });
-      
-      const repPayBody = document.getElementById('reports-payroll-body');
-      if(tg > 0) {
-        repPayBody.innerHTML = `<tr>
-          <td class="p-2 font-semibold">$${tg.toFixed(2)}</td><td class="p-2 text-red-600">$${tc.toFixed(2)}</td>
-          <td class="p-2 text-red-600">$${te.toFixed(2)}</td><td class="p-2 text-red-600">$${tt.toFixed(2)}</td>
-        </tr>`;
-      }
-    }
+    const netCur = totalCurEarn + totalCurWith; // withholdings are negative
+    const netYtd = totalYTDEarn + totalYTDWith;
+    const empName = document.getElementById('empName').value;
+    const payPeriod = document.getElementById('payPeriod').value;
 
-    function clearData() {
-      if(confirm("Are you sure you want to delete all local data?")) {
-        db = { payroll: [], ledger: [] };
-        saveDB();
-      }
-    }
+    const stubHtml = `
+      <div style="margin-bottom: 30px;">
+        <h2 style="margin:0; font-family: Arial, sans-serif;">PAY STATEMENT</h2>
+        <p style="margin:5px 0; font-family: Arial, sans-serif;"><strong>Employee:</strong> ${empName} <br><strong>Pay Period:</strong> ${payPeriod}</p>
+      </div>
 
-    // Initial render
-    renderAll();
-  </script>
+      <table class="stub-table">
+        <thead>
+          <tr>
+            <th class="left" style="width:40%;">Earnings</th>
+            <th style="width:10%;">Qty</th>
+            <th style="width:15%;">Rate</th>
+            <th style="width:15%;">Current</th>
+            <th style="width:20%;">YTD Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${eHtml}
+          <tr class="stub-total-row">
+            <td class="left"></td>
+            <td>${formatNum(totalQty)}</td>
+            <td></td>
+            <td>${formatMoney(totalCurEarn)}</td>
+            <td>${formatMoney(totalYTDEarn)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="stub-table" style="margin-top: 30px;">
+        <thead>
+          <tr>
+            <th class="left" colspan="3">Withholdings</th>
+            <th style="width:15%;">Current</th>
+            <th style="width:20%;">YTD Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${wHtml}
+          <tr class="stub-total-row">
+            <td class="left" colspan="3"></td>
+            <td>${formatMoney(totalCurWith)}</td>
+            <td>${formatMoney(totalYTDWith)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="stub-table" style="margin-top: 20px;">
+        <tbody>
+          <tr class="net-pay">
+            <td class="left" colspan="3" style="font-size: 16px;">Net Pay</td>
+            <td style="width:15%; font-size: 16px;">${formatMoney(netCur)}</td>
+            <td style="width:20%; font-size: 16px;">${formatMoney(netYtd)}</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+
+    document.getElementById('preview-box').innerHTML = stubHtml;
+    document.getElementById('preview-box').style.display = 'block';
+    
+    document.getElementById('print-section').innerHTML = stubHtml;
+    document.getElementById('printBtn').style.display = 'block';
+  }
+
+  renderInputs();
+</script>
 </body>
 </html>
