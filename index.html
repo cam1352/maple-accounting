@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Professional Payroll & Pay Stub Generator</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
     /* Professional Corporate Styling */
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f3f4f6; color: #111827; }
@@ -43,12 +44,52 @@
 
 <div class="container" id="app-ui">
   <div class="app-card">
-    <div class="app-header">
-      <h1 class="text-xl font-semibold">Corporate Payroll System</h1>
-      <p class="text-xs text-gray-300">Generate Professional Pay Stubs</p>
+    <div class="app-header flex justify-between items-center">
+      <div>
+        <h1 class="text-xl font-semibold">Corporate Accounting System</h1>
+        <p class="text-xs text-gray-300">Professional Tools</p>
+      </div>
+      <div class="flex space-x-2">
+        <button class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-sm font-semibold" onclick="showTab('tab-payroll')"><i class="fas fa-file-invoice-dollar mr-1"></i> Pay Stubs</button>
+        <button class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1 rounded text-sm font-semibold shadow-sm" onclick="showTab('tab-bank')"><i class="fas fa-robot mr-1"></i> AI Bank Sync</button>
+      </div>
     </div>
 
-    <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- AI Bank Sync Tab -->
+    <div id="tab-bank" style="display:none;" class="p-6">
+      <h2 class="text-lg font-bold border-b pb-2 mb-6">AI Bank Reconciliation</h2>
+      <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded p-12 text-center mb-6">
+        <h3 class="text-xl font-bold mb-2">Upload Bank Statement</h3>
+        <p class="text-sm text-gray-500 mb-6">Upload a screenshot of your bank. Our AI Agent will extract and categorize the transactions.</p>
+        <input type="file" id="bank-upload" accept="image/*" class="mb-4 text-sm">
+        <br>
+        <button onclick="simulateAI()" class="btn btn-primary bg-indigo-600 text-white shadow-md">Run AI Analysis</button>
+      </div>
+      
+      <div id="ai-results" style="display:none;" class="border-t-4 border-indigo-500 rounded bg-white shadow-sm overflow-hidden">
+        <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
+           <span class="font-bold text-sm text-gray-700">AI Extraction Complete</span>
+           <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full font-bold">4 Transactions Found</span>
+        </div>
+        <table class="w-full text-left text-sm border-collapse">
+          <thead>
+            <tr class="bg-gray-100 border-b">
+              <th class="p-3">Date</th><th class="p-3">Description</th><th class="p-3">Category Guess</th><th class="p-3 text-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b"><td class="p-3">Oct 01</td><td class="p-3 font-semibold">SYSCO FOOD SVCS</td><td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-bold">Food Supplier</span></td><td class="p-3 text-right text-red-600">-$450.22</td></tr>
+            <tr class="border-b"><td class="p-3">Oct 01</td><td class="p-3 font-semibold">SQUARE INC * DEP</td><td class="p-3"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">Daily Sales</span></td><td class="p-3 text-right text-green-600">+$1,240.50</td></tr>
+            <tr class="border-b"><td class="p-3">Sep 30</td><td class="p-3 font-semibold">BC HYDRO</td><td class="p-3"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-bold">Utilities</span></td><td class="p-3 text-right text-red-600">-$185.00</td></tr>
+            <tr class="border-b"><td class="p-3">Sep 29</td><td class="p-3 font-semibold">PAYROLL DIR DEP</td><td class="p-3"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-bold">Payroll Wage</span></td><td class="p-3 text-right text-red-600">-$1,171.86</td></tr>
+          </tbody>
+        </table>
+        <div class="p-4 text-right bg-gray-50 border-t"><button class="bg-green-600 text-white px-6 py-2 rounded text-sm font-bold shadow hover:bg-green-700">Approve All to Ledger</button></div>
+      </div>
+    </div>
+
+    <!-- Payroll Tab -->
+    <div id="tab-payroll" class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
       
       <!-- Input Section -->
       <div>
@@ -103,6 +144,30 @@
 </div>
 
 <script>
+  function showTab(tabId) {
+    document.getElementById('tab-payroll').style.display = 'none';
+    document.getElementById('tab-bank').style.display = 'none';
+    document.getElementById(tabId).style.display = (tabId === 'tab-payroll') ? 'grid' : 'block';
+  }
+
+  function simulateAI() {
+    const upload = document.getElementById('bank-upload');
+    if (!upload.files || upload.files.length === 0) {
+      alert("Please upload an image of a bank statement first!");
+      return;
+    }
+    const btn = event.target;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing Image...';
+    btn.disabled = true;
+    
+    // Simulate API delay
+    setTimeout(() => {
+      document.getElementById('ai-results').style.display = 'block';
+      btn.innerHTML = 'Run AI Analysis';
+      btn.disabled = false;
+    }, 2000);
+  }
+
   // Initial Data structures
   let earnings = [
     { desc: "Regular Hourly Rate", qty: 31, rate: 20.00, ytd: 13400.00 },
